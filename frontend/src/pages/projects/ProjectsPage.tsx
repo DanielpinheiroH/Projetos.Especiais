@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProjects } from "../../lib/api";
+import { getProjectPdfDownloadUrl, getProjects } from "../../lib/api";
 
 function statusClass(status: string) {
   if (status === "ATIVO") {
@@ -268,7 +268,7 @@ export function ProjectsPage() {
                     <div className="flex flex-wrap items-center gap-3">
                       {project.pdf_url ? (
                         <a
-                          href={`http://localhost:3333/api/projects/${project.id}/download-pdf`}
+                          href={getProjectPdfDownloadUrl(project.id)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"

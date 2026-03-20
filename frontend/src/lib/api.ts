@@ -54,6 +54,9 @@ export async function getProjects() {
 
   return response.json();
 }
+export function getProjectPdfDownloadUrl(id: string) {
+  return `${API_URL}/projects/${id}/download-pdf`;
+}
 
 export async function getProjectById(id: string) {
   const response = await fetch(`${API_URL}/projects/${id}`);
