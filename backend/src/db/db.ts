@@ -3,12 +3,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL não definida");
+}
+
 export const db = new Pool({
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT || 5432),
-  user: process.env.DB_USER || "postgres",
-  password: String(process.env.DB_PASSWORD || "postgres"),
-  database: process.env.DB_NAME || "projetos_especiais",
+  connectionString: process.env.DATABASE_URL,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
 export async function testDbConnection() {
@@ -17,6 +21,9 @@ export async function testDbConnection() {
   try {
     const result = await client.query("SELECT NOW()");
     console.log("Banco conectado com sucesso:", result.rows[0]);
+  } catch (error) {
+    console.error("Erro ao conectar no banco:", error);
+    throw error;
   } finally {
     client.release();
   }
