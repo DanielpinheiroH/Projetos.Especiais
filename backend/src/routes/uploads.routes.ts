@@ -53,7 +53,11 @@ export async function uploadRoutes(app: FastifyInstance) {
             });
           }
 
-          const fileUrl = `http://localhost:3333/uploads/${folder}/${safeName}`;
+          const appUrl =
+            process.env.APP_URL ||
+            `${request.protocol}://${request.headers.host}`;
+
+          const fileUrl = `${appUrl}/uploads/${folder}/${safeName}`;
 
           responseData = {
             url: fileUrl,
