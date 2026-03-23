@@ -55,8 +55,10 @@ export async function uploadRoutes(app: FastifyInstance) {
             });
           }
 
+          const resourceType = type === "pdf" ? "raw" : "image";
+
           const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-            resource_type: "auto",
+            resource_type: resourceType,
             folder: `projetos-especiais/${folder}`,
             use_filename: false,
             unique_filename: true,
