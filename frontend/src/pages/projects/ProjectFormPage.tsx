@@ -104,8 +104,24 @@ export function ProjectFormPage() {
       await createProject(payload);
       navigate("/projetos");
     } catch (error) {
-      console.error(error);
-      alert("Erro ao salvar projeto.");
+      console.error("Erro ao salvar projeto:", error);
+
+      let message = "Erro ao salvar projeto.";
+
+      if (error instanceof Error) {
+        message = error.message;
+      }
+
+      try {
+        const parsed = JSON.parse(message);
+        if (parsed?.message) {
+          message = parsed.message;
+        }
+      } catch {
+        // mantém a mensagem original
+      }
+
+      alert(message);
     } finally {
       setSaving(false);
     }
@@ -177,34 +193,34 @@ export function ProjectFormPage() {
                     type="date"
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
-                    disabled={hasNoExpiration}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white disabled:opacity-60"
+                    disabled={hasNoExpiration || type === "ATEMPORAL"}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
 
                 <div className="md:col-span-2">
+                  <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={hasNoExpiration}
+                      onChange={(e) => setHasNoExpiration(e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    Este projeto não possui data de validade
+                  </label>
+                </div>
+
+                <div className="md:col-span-2">
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Descrição do projeto
+                    Descrição
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-[160px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
-                    placeholder="Descreva os objetivos, contexto comercial e características principais do projeto..."
+                    rows={6}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
+                    placeholder="Descreva o projeto, objetivo, diferencial comercial..."
                   />
-                </div>
-
-                <div className="md:col-span-2 flex items-center gap-3 rounded-2xl bg-[var(--brand-soft-2)] px-4 py-4">
-                  <input
-                    id="no-exp"
-                    type="checkbox"
-                    className="h-4 w-4"
-                    checked={hasNoExpiration}
-                    onChange={(e) => setHasNoExpiration(e.target.checked)}
-                  />
-                  <label htmlFor="no-exp" className="text-sm text-slate-700">
-                    Este projeto não possui data de validade
-                  </label>
                 </div>
               </div>
             </div>
@@ -221,43 +237,32 @@ export function ProjectFormPage() {
                 <button
                   type="button"
                   onClick={handleAddQuota}
-                  className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+                  className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Adicionar cota
                 </button>
               </div>
 
-              {quotas.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-red-200 bg-[var(--brand-soft-2)] p-8">
-                  <div className="mx-auto max-w-md text-center">
-                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
-                      🎯
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      Nenhuma cota adicionada ainda
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Cadastre cotas para organizar disponibilidade, valores e
-                      vendas do projeto.
-                    </p>
+              <div className="space-y-4">
+                {quotas.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                    Nenhuma cota adicionada ainda.
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {quotas.map((quota, index) => (
+                ) : (
+                  quotas.map((quota, index) => (
                     <div
                       key={quota.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
+                      className="rounded-2xl border border-slate-200 p-5"
                     >
                       <div className="mb-4 flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-slate-800">
+                        <h4 className="font-semibold text-slate-800">
                           Cota {index + 1}
                         </h4>
 
                         <button
                           type="button"
                           onClick={() => handleRemoveQuota(quota.id)}
-                          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                          className="rounded-xl border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                         >
                           Remover
                         </button>
@@ -273,8 +278,8 @@ export function ProjectFormPage() {
                             onChange={(e) =>
                               handleQuotaChange(quota.id, "name", e.target.value)
                             }
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-red-300"
-                            placeholder="Ex: Cota Master"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
+                            placeholder="Ex: Cota Oferecimento"
                           />
                         </div>
 
@@ -287,8 +292,50 @@ export function ProjectFormPage() {
                             onChange={(e) =>
                               handleQuotaChange(quota.id, "type", e.target.value)
                             }
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-red-300"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
                             placeholder="Ex: Patrocínio"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-semibold text-slate-700">
+                            Valor unitário
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={quota.unitPrice}
+                            onChange={(e) =>
+                              handleQuotaChange(
+                                quota.id,
+                                "unitPrice",
+                                e.target.value
+                              )
+                            }
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
+                            placeholder="0,00"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-semibold text-slate-700">
+                            Quantidade
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={quota.quantity}
+                            onChange={(e) =>
+                              handleQuotaChange(
+                                quota.id,
+                                "quantity",
+                                e.target.value
+                              )
+                            }
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
+                            placeholder="0"
                           />
                         </div>
 
@@ -305,51 +352,16 @@ export function ProjectFormPage() {
                                 e.target.value
                               )
                             }
-                            className="min-h-[100px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-red-300"
-                            placeholder="Descreva o que essa cota oferece..."
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-slate-700">
-                            Valor da cota
-                          </label>
-                          <input
-                            value={quota.unitPrice}
-                            onChange={(e) =>
-                              handleQuotaChange(
-                                quota.id,
-                                "unitPrice",
-                                e.target.value
-                              )
-                            }
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-red-300"
-                            placeholder="Ex: 25000"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-slate-700">
-                            Quantidade disponível
-                          </label>
-                          <input
-                            value={quota.quantity}
-                            onChange={(e) =>
-                              handleQuotaChange(
-                                quota.id,
-                                "quantity",
-                                e.target.value
-                              )
-                            }
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-red-300"
-                            placeholder="Ex: 5"
+                            rows={3}
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
+                            placeholder="Detalhes adicionais da cota..."
                           />
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -431,72 +443,74 @@ export function ProjectFormPage() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Resumo do cadastro
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Revise as informações antes de salvar.
-              </p>
+              <div className="mb-5">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Resumo do cadastro
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Revise as informações antes de salvar.
+                </p>
+              </div>
 
-              <div className="mt-4 space-y-3 text-sm">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-slate-500">Projeto</span>
-                  <strong className="text-slate-800">
-                    {name || "Não preenchido"}
+                  <strong className="text-right text-slate-900">
+                    {name || "-"}
                   </strong>
                 </div>
 
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-slate-500">Imagem de capa</span>
-                  <strong className="text-slate-800">
-                    {coverImageName || "Pendente"}
+                  <strong className="text-right text-slate-900">
+                    {coverImageName || "Não enviada"}
                   </strong>
                 </div>
 
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-slate-500">PDF comercial</span>
-                  <strong className="text-slate-800">
-                    {pdfName || "Pendente"}
+                  <strong className="text-right text-slate-900">
+                    {pdfName || "Não enviado"}
                   </strong>
                 </div>
 
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
                   <span className="text-slate-500">Cotas</span>
-                  <strong className="text-slate-800">
-                    {quotas.length} cadastrada{quotas.length !== 1 ? "s" : ""}
+                  <strong className="text-right text-slate-900">
+                    {quotas.length} cadastrada{quotas.length === 1 ? "" : "s"}
                   </strong>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Finalizar cadastro
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Salve o projeto para disponibilizá-lo na plataforma.
-            </p>
-          </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Finalizar cadastro
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Salve o projeto para disponibilizá-lo na plataforma.
+                </p>
+              </div>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => navigate("/projetos")}
-              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Cancelar
-            </button>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => navigate("/projetos")}
+                  className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-2xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[var(--brand-dark)] disabled:opacity-70"
-            >
-              {saving ? "Salvando..." : "Salvar projeto"}
-            </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)] disabled:opacity-60"
+                >
+                  {saving ? "Salvando..." : "Salvar projeto"}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </form>
