@@ -32,12 +32,20 @@ function formatDate(date?: string | null) {
 }
 
 type ProjectFilter = "TODOS" | "ATIVOS" | "INATIVOS";
+type ProjectTypeFilter =
+  | "TODOS"
+  | "ATEMPORAL"
+  | "ESPECIAL_COM_DATA"
+  | "EVENTO"
+  | "ESPECIFICO_PARA_MARCA";
 
 export function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectFilter>("TODOS");
+  const [typeFilter, setTypeFilter] =
+    useState<ProjectTypeFilter>("TODOS");
 
   async function loadProjects() {
     try {
@@ -71,9 +79,12 @@ export function ProjectsPage() {
           ? project.status === "ATIVO" || project.status === "ATEMPORAL"
           : project.status === "INATIVO";
 
-      return matchesSearch && matchesStatus;
+      const matchesType =
+        typeFilter === "TODOS" ? true : project.type === typeFilter;
+
+      return matchesSearch && matchesStatus && matchesType;
     });
-  }, [projects, search, statusFilter]);
+  }, [projects, search, statusFilter, typeFilter]);
 
   const totalProjects = projects.length;
   const activeProjects = projects.filter(
@@ -173,13 +184,88 @@ export function ProjectsPage() {
         </div>
       </section>
 
+      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              Filtrar por tipo
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Escolha um tipo de projeto para refinar a listagem.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setTypeFilter("TODOS")}
+              className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+                typeFilter === "TODOS"
+                  ? "bg-[var(--brand)] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Todos
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("ATEMPORAL")}
+              className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+                typeFilter === "ATEMPORAL"
+                  ? "bg-[var(--brand)] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Atemporal
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("ESPECIAL_COM_DATA")}
+              className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+                typeFilter === "ESPECIAL_COM_DATA"
+                  ? "bg-[var(--brand)] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Especial com Data
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("EVENTO")}
+              className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+                typeFilter === "EVENTO"
+                  ? "bg-[var(--brand)] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Evento
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("ESPECIFICO_PARA_MARCA")}
+              className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+                typeFilter === "ESPECIFICO_PARA_MARCA"
+                  ? "bg-[var(--brand)] text-white"
+                  : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              Específico para Marca
+            </button>
+          </div>
+        </div>
+      </section>
+
       {filteredProjects.length === 0 ? (
         <section className="rounded-[28px] border border-slate-200 bg-white p-10 text-center shadow-sm">
           <p className="text-base font-semibold text-slate-800">
             Nenhum projeto encontrado
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            Ajuste a busca ou altere o filtro selecionado.
+            Ajuste a busca ou altere os filtros selecionados.
           </p>
         </section>
       ) : (
