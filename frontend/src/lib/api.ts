@@ -4,7 +4,6 @@ if (!API_URL) {
   throw new Error("VITE_API_URL não definida");
 }
 
-
 export type ProjectQuotaInput = {
   name: string;
   description?: string;
@@ -53,9 +52,6 @@ export async function getProjects() {
   }
 
   return response.json();
-}
-export function getProjectPdfDownloadUrl(id: string) {
-  return `${API_URL}/projects/${id}/download-pdf`;
 }
 
 export async function getProjectById(id: string) {

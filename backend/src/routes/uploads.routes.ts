@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { randomUUID } from "node:crypto";
+import cloudinary from "../config/cloudinary.js";
 
 export async function uploadRoutes(app: FastifyInstance) {
   app.post("/uploads", async (request, reply) => {
@@ -17,6 +18,7 @@ export async function uploadRoutes(app: FastifyInstance) {
             storedName: string;
             folder: string;
             mimeType: string;
+            publicId: string;
           }
         | null = null;
 
@@ -34,37 +36,41 @@ export async function uploadRoutes(app: FastifyInstance) {
           if (type === "cover") folder = "covers";
           if (type === "pdf") folder = "pdfs";
 
-          const uploadDir = path.join(process.cwd(), "uploads", folder);
+          const tempDir = path.join(process.cwd(), "tmp");
 
-          if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
           }
 
-          const filePath = path.join(uploadDir, safeName);
+          const tempFilePath = path.join(tempDir, safeName);
 
-          await pipeline(part.file, fs.createWriteStream(filePath));
+          await pipeline(part.file, fs.createWriteStream(tempFilePath));
 
-          const stats = fs.statSync(filePath);
+          const stats = fs.statSync(tempFilePath);
           if (!stats.size || stats.size <= 0) {
-            fs.unlinkSync(filePath);
+            fs.unlinkSync(tempFilePath);
 
             return reply.status(400).send({
               message: "Arquivo salvo inválido ou vazio.",
             });
           }
 
-          const appUrl =
-            process.env.APP_URL ||
-            `${request.protocol}://${request.headers.host}`;
+          const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
+            resource_type: "auto",
+            folder: `projetos-especiais/${folder}`,
+            use_filename: false,
+            unique_filename: true,
+          });
 
-          const fileUrl = `${appUrl}/uploads/${folder}/${safeName}`;
+          fs.unlinkSync(tempFilePath);
 
           responseData = {
-            url: fileUrl,
+            url: uploadResult.secure_url,
             fileName: part.filename,
             storedName: safeName,
             folder,
             mimeType: part.mimetype,
+            publicId: uploadResult.public_id,
           };
 
           break;

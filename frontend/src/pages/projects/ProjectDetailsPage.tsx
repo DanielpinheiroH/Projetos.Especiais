@@ -5,7 +5,6 @@ import {
   deactivateProject,
   deleteProject,
   getProjectById,
-  getProjectPdfDownloadUrl,
 } from "../../lib/api";
 
 type ProjectQuota = {
@@ -442,7 +441,7 @@ export function ProjectDetailsPage() {
           <div className="mt-4 flex flex-wrap gap-3">
             {project.pdf_url ? (
               <a
-                href={getProjectPdfDownloadUrl(project.id)}
+                href={project.pdf_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
