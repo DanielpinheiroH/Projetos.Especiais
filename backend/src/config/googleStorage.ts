@@ -8,7 +8,13 @@ if (!process.env.GCS_BUCKET) {
   throw new Error("Variável obrigatória ausente: GCS_BUCKET");
 }
 
-const credentials = JSON.parse(process.env.GCS_CREDENTIALS_JSON);
+const raw = process.env.GCS_CREDENTIALS_JSON!;
+
+const credentials = JSON.parse(
+  raw
+    .replace(/\r?\n/g, "\n")
+    .trim()
+);
 
 const storage = new Storage({
   projectId: credentials.project_id,
