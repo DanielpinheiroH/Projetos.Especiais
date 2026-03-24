@@ -142,3 +142,19 @@ export async function uploadProjectFile(file: File, type: "cover" | "pdf") {
 
   return response.json();
 }
+export async function updateProject(id: string, data: CreateProjectPayload) {
+  const response = await fetch(`${API_URL}/projects/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Erro ao atualizar projeto");
+  }
+
+  return response.json();
+}

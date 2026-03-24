@@ -1,6 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createProject, uploadProjectFile } from "../../lib/api";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  createProject,
+  getProjectById,
+  updateProject,
+  uploadProjectFile,
+} from "../../lib/api";
 
 type Quota = {
   id: number;
@@ -13,6 +18,8 @@ type Quota = {
 
 export function ProjectFormPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
 
   const [name, setName] = useState("");
   const [type, setType] = useState("ATEMPORAL");
@@ -26,8 +33,55 @@ export function ProjectFormPage() {
   const [pdfName, setPdfName] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
+  const [existingCoverImageUrl, setExistingCoverImageUrl] = useState<string | null>(null);
+  const [existingPdfUrl, setExistingPdfUrl] = useState<string | null>(null);
+
   const [quotas, setQuotas] = useState<Quota[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loadingProject, setLoadingProject] = useState(false);
+
+  useEffect(() => {
+    async function loadProjectForEdit() {
+      if (!id) return;
+
+      try {
+        setLoadingProject(true);
+
+        const data = await getProjectById(id);
+
+        setName(data.name || "");
+        setType(data.type || "ATEMPORAL");
+        setExpiresAt(data.expires_at ? String(data.expires_at).split("T")[0] : "");
+        setDescription(data.description || "");
+        setHasNoExpiration(Boolean(data.has_no_expiration));
+
+        setCoverImageName(data.cover_image_name || null);
+        setPdfName(data.pdf_name || null);
+        setCoverPreview(data.cover_image_url || null);
+
+        setExistingCoverImageUrl(data.cover_image_url || null);
+        setExistingPdfUrl(data.pdf_url || null);
+
+        setQuotas(
+          (data.quotas || []).map((quota: any) => ({
+            id: Date.now() + Math.floor(Math.random() * 100000) + Number(quota.quantity_total || 0),
+            name: quota.name || "",
+            description: quota.description || "",
+            type: quota.quota_type || "",
+            unitPrice: String(quota.unit_price ?? ""),
+            quantity: String(quota.quantity_total ?? ""),
+          }))
+        );
+      } catch (error) {
+        console.error("Erro ao carregar projeto para edição:", error);
+        alert("Não foi possível carregar os dados do projeto.");
+      } finally {
+        setLoadingProject(false);
+      }
+    }
+
+    loadProjectForEdit();
+  }, [id]);
 
   function handleAddQuota() {
     setQuotas((prev) => [
@@ -65,9 +119,9 @@ export function ProjectFormPage() {
     try {
       setSaving(true);
 
-      let uploadedCoverUrl: string | null = null;
+      let uploadedCoverUrl: string | null = existingCoverImageUrl;
       let uploadedCoverName: string | null = coverImageName;
-      let uploadedPdfUrl: string | null = null;
+      let uploadedPdfUrl: string | null = existingPdfUrl;
       let uploadedPdfName: string | null = pdfName;
 
       if (coverFile) {
@@ -102,7 +156,12 @@ export function ProjectFormPage() {
         })),
       };
 
-      await createProject(payload);
+      if (isEditMode && id) {
+        await updateProject(id, payload);
+      } else {
+        await createProject(payload);
+      }
+
       navigate("/projetos");
     } catch (error) {
       console.error("Erro ao salvar projeto:", error);
@@ -128,16 +187,27 @@ export function ProjectFormPage() {
     }
   }
 
+  if (loadingProject) {
+    return (
+      <div className="p-10 text-center text-slate-500">
+        Carregando projeto para edição...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] p-8 text-white shadow-lg">
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-red-100">
           Cadastro
         </p>
-        <h2 className="mt-2 text-3xl font-bold tracking-tight">Novo projeto</h2>
+        <h2 className="mt-2 text-3xl font-bold tracking-tight">
+          {isEditMode ? "Editar projeto" : "Novo projeto"}
+        </h2>
         <p className="mt-2 max-w-2xl text-sm text-red-50">
-          Cadastre um novo projeto especial, defina suas informações principais,
-          anexe a imagem de capa para exibição nos cards e envie o PDF comercial.
+          {isEditMode
+            ? "Atualize as informações do projeto, revise os materiais e ajuste as cotas disponíveis."
+            : "Cadastre um novo projeto especial, defina suas informações principais, anexe a imagem de capa para exibição nos cards e envie o PDF comercial."}
         </p>
       </section>
 
@@ -308,11 +378,7 @@ export function ProjectFormPage() {
                             step="0.01"
                             value={quota.unitPrice}
                             onChange={(e) =>
-                              handleQuotaChange(
-                                quota.id,
-                                "unitPrice",
-                                e.target.value
-                              )
+                              handleQuotaChange(quota.id, "unitPrice", e.target.value)
                             }
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
                             placeholder="0,00"
@@ -329,11 +395,7 @@ export function ProjectFormPage() {
                             step="1"
                             value={quota.quantity}
                             onChange={(e) =>
-                              handleQuotaChange(
-                                quota.id,
-                                "quantity",
-                                e.target.value
-                              )
+                              handleQuotaChange(quota.id, "quantity", e.target.value)
                             }
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
                             placeholder="0"
@@ -347,11 +409,7 @@ export function ProjectFormPage() {
                           <textarea
                             value={quota.description}
                             onChange={(e) =>
-                              handleQuotaChange(
-                                quota.id,
-                                "description",
-                                e.target.value
-                              )
+                              handleQuotaChange(quota.id, "description", e.target.value)
                             }
                             rows={3}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-red-300 focus:bg-white"
@@ -405,7 +463,7 @@ export function ProjectFormPage() {
                     htmlFor="cover-upload"
                     className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
                   >
-                    {coverFile ? "Trocar capa" : "Adicionar capa"}
+                    {coverImageName ? "Trocar capa" : "Adicionar capa"}
                   </label>
 
                   <input
@@ -421,7 +479,7 @@ export function ProjectFormPage() {
                         const previewUrl = URL.createObjectURL(file);
                         setCoverPreview(previewUrl);
                       } else {
-                        setCoverPreview(null);
+                        setCoverPreview(existingCoverImageUrl);
                       }
                     }}
                     className="hidden"
@@ -434,13 +492,14 @@ export function ProjectFormPage() {
                     </div>
                   )}
 
-                  {coverFile && (
+                  {(coverFile || coverImageName) && (
                     <button
                       type="button"
                       onClick={() => {
                         setCoverFile(null);
                         setCoverImageName(null);
                         setCoverPreview(null);
+                        setExistingCoverImageUrl(null);
                       }}
                       className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
@@ -502,6 +561,7 @@ export function ProjectFormPage() {
                       onClick={() => {
                         setPdfFile(null);
                         setPdfName(null);
+                        setExistingPdfUrl(null);
                       }}
                       className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
@@ -577,7 +637,7 @@ export function ProjectFormPage() {
                   disabled={saving}
                   className="flex-1 rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)] disabled:opacity-60"
                 >
-                  {saving ? "Salvando..." : "Salvar projeto"}
+                  {saving ? "Salvando..." : isEditMode ? "Salvar alterações" : "Salvar projeto"}
                 </button>
               </div>
             </div>

@@ -316,9 +316,12 @@ export function ProjectDetailsPage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
-                <button className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                  Editar
-                </button>
+                <button
+  onClick={() => navigate(`/projetos/editar/${project.id}`)}
+  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+>
+  Editar
+</button>
 
                 <button
                   onClick={handleDeactivate}
