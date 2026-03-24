@@ -226,11 +226,13 @@ export function ProjectDetailsPage() {
           <div className="border-b border-slate-100 bg-slate-50 lg:border-b-0 lg:border-r lg:border-slate-100">
             <div className="flex h-full min-h-[320px] items-center justify-center p-8">
               {project.cover_image_url ? (
-                <img
-                  src={project.cover_image_url}
-                  alt={project.name}
-                  className="h-[260px] w-[180px] rounded-[24px] object-cover shadow-xl ring-1 ring-slate-200"
-                />
+                <div className="h-[260px] w-[180px] overflow-hidden rounded-[24px] bg-white shadow-xl ring-1 ring-slate-200">
+  <img
+    src={project.cover_image_url}
+    alt={project.name}
+    className="h-full w-full object-contain p-3"
+  />
+</div>
               ) : (
                 <div className="flex h-[260px] w-[180px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white text-center text-sm text-slate-400">
                   Sem capa

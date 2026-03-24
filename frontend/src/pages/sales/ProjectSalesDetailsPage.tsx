@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import * as XLSX from "xlsx";
 import { getProjectById } from "../../lib/api";
 
 type ProjectSale = {
@@ -10,7 +11,10 @@ type ProjectSale = {
   quota_name?: string;
   quantity?: number;
   discount_percentage?: string | number;
+  original_unit_price?: string | number;
+  final_unit_price?: string | number;
   final_total_price?: string | number;
+  notes?: string;
 };
 
 type ProjectDetails = {
@@ -84,6 +88,52 @@ export function ProjectSalesDetailsPage() {
     return totalRevenue / totalSales;
   }, [totalRevenue, totalSales]);
 
+  function handleExportSales() {
+    if (!project || !project.sales?.length) {
+      alert("Não há vendas para exportar neste projeto.");
+      return;
+    }
+
+    const data = project.sales.map((sale) => ({
+      Data: sale.sale_date
+        ? new Date(sale.sale_date).toLocaleDateString("pt-BR")
+        : "",
+      Anunciante: sale.advertiser_name || "",
+      Executivo: sale.executive_name || "",
+      Cota: sale.quota_name || "",
+      Quantidade: Number(sale.quantity || 0),
+      "Valor Unitário Original": Number(sale.original_unit_price || 0),
+      "Desconto (%)": Number(sale.discount_percentage || 0),
+      "Valor Unitário Final": Number(sale.final_unit_price || 0),
+      "Valor Total Final": Number(sale.final_total_price || 0),
+      Observações: sale.notes || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    worksheet["!cols"] = [
+      { wch: 14 },
+      { wch: 28 },
+      { wch: 24 },
+      { wch: 24 },
+      { wch: 12 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 40 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vendas");
+
+    const safeProjectName = (project.name || "projeto")
+      .replace(/[\\/:*?"<>|]/g, "_")
+      .replace(/\s+/g, "_");
+
+    XLSX.writeFile(workbook, `vendas_${safeProjectName}.xlsx`);
+  }
+
   const cards = [
     { title: "Total de vendas", value: String(totalSales) },
     { title: "Faturamento do projeto", value: formatMoney(totalRevenue) },
@@ -122,7 +172,11 @@ export function ProjectSalesDetailsPage() {
           </p>
         </div>
 
-        <button className="rounded-2xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]">
+        <button
+          type="button"
+          onClick={handleExportSales}
+          className="rounded-2xl bg-[var(--brand)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--brand-dark)]"
+        >
           Exportar vendas do projeto
         </button>
       </section>

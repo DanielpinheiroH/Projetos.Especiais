@@ -24,6 +24,7 @@ export function ProjectFormPage() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [coverImageName, setCoverImageName] = useState<string | null>(null);
   const [pdfName, setPdfName] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [quotas, setQuotas] = useState<Quota[]>([]);
   const [saving, setSaving] = useState(false);
@@ -378,29 +379,75 @@ export function ProjectFormPage() {
 
               <div className="space-y-4">
                 <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-red-200 bg-[var(--brand-soft-2)] p-6 text-center">
-                  <div>
-                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
-                      🖼️
+                  {coverPreview ? (
+                    <img
+                      src={coverPreview}
+                      alt="Preview da capa"
+                      className="max-h-[220px] rounded-xl object-contain"
+                    />
+                  ) : (
+                    <div>
+                      <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm">
+                        🖼️
+                      </div>
+                      <p className="text-sm font-semibold text-slate-800">
+                        Nenhuma imagem selecionada
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        PNG, JPG ou WEBP
+                      </p>
                     </div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      Faça upload da imagem do projeto
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Recomendado para exibição nos cards
-                    </p>
-                  </div>
+                  )}
                 </div>
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setCoverFile(file);
-                    setCoverImageName(file?.name || null);
-                  }}
-                  className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
-                />
+                <div className="flex flex-col gap-3">
+                  <label
+                    htmlFor="cover-upload"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+                  >
+                    {coverFile ? "Trocar capa" : "Adicionar capa"}
+                  </label>
+
+                  <input
+                    id="cover-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setCoverFile(file);
+                      setCoverImageName(file?.name || null);
+
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        setCoverPreview(previewUrl);
+                      } else {
+                        setCoverPreview(null);
+                      }
+                    }}
+                    className="hidden"
+                  />
+
+                  {coverImageName && (
+                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                      <span className="font-semibold">Arquivo:</span>{" "}
+                      {coverImageName}
+                    </div>
+                  )}
+
+                  {coverFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCoverFile(null);
+                        setCoverImageName(null);
+                        setCoverPreview(null);
+                      }}
+                      className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Remover capa
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -421,24 +468,47 @@ export function ProjectFormPage() {
                       📄
                     </div>
                     <p className="text-sm font-semibold text-slate-800">
-                      Faça upload do PDF comercial
+                      {pdfName ? "PDF selecionado com sucesso" : "Nenhum PDF selecionado"}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Apenas arquivos PDF
+                      {pdfName ? pdfName : "Apenas arquivos PDF"}
                     </p>
                   </div>
                 </div>
 
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setPdfFile(file);
-                    setPdfName(file?.name || null);
-                  }}
-                  className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
-                />
+                <div className="flex flex-col gap-3">
+                  <label
+                    htmlFor="pdf-upload"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+                  >
+                    {pdfName ? "Trocar PDF" : "Adicionar PDF"}
+                  </label>
+
+                  <input
+                    id="pdf-upload"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setPdfFile(file);
+                      setPdfName(file?.name || null);
+                    }}
+                    className="hidden"
+                  />
+
+                  {pdfName && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPdfFile(null);
+                        setPdfName(null);
+                      }}
+                      className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Remover PDF
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
