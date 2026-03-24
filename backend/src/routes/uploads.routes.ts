@@ -61,6 +61,7 @@ export async function uploadRoutes(app: FastifyInstance) {
               contentType: getMimeType(type, part.mimetype),
             },
             resumable: false,
+            validation: false,
           });
 
           responseData = {
