@@ -1,8 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
-import fastifyStatic from "@fastify/static";
-import path from "node:path";
 import { routes } from "./routes/index.js";
 
 export async function buildApp() {
@@ -22,11 +20,6 @@ export async function buildApp() {
       fileSize: 50 * 1024 * 1024,
       files: 1,
     },
-  });
-
-  await app.register(fastifyStatic, {
-    root: path.join(process.cwd(), "uploads"),
-    prefix: "/uploads/",
   });
 
   await app.register(routes, { prefix: "/api" });

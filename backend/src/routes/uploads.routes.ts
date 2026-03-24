@@ -1,9 +1,14 @@
 import { FastifyInstance } from "fastify";
-import fs from "node:fs";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { randomUUID } from "node:crypto";
-import cloudinary from "../config/cloudinary.js";
+import { bucket } from "../config/googleStorage.js";
+
+function getMimeType(type: string, originalMimeType?: string) {
+  if (originalMimeType) return originalMimeType;
+
+  if (type === "pdf") return "application/pdf";
+  return "application/octet-stream";
+}
 
 export async function uploadRoutes(app: FastifyInstance) {
   app.post("/uploads", async (request, reply) => {
@@ -18,7 +23,6 @@ export async function uploadRoutes(app: FastifyInstance) {
             storedName: string;
             folder: string;
             mimeType: string;
-            publicId: string;
           }
         | null = null;
 
@@ -36,43 +40,36 @@ export async function uploadRoutes(app: FastifyInstance) {
           if (type === "cover") folder = "covers";
           if (type === "pdf") folder = "pdfs";
 
-          const tempDir = path.join(process.cwd(), "tmp");
+          const objectPath = `projetos-especiais/${folder}/${safeName}`;
 
-          if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });
+          const chunks: Buffer[] = [];
+          for await (const chunk of part.file) {
+            chunks.push(chunk);
           }
 
-          const tempFilePath = path.join(tempDir, safeName);
+          const fileBuffer = Buffer.concat(chunks);
 
-          await pipeline(part.file, fs.createWriteStream(tempFilePath));
-
-          const stats = fs.statSync(tempFilePath);
-          if (!stats.size || stats.size <= 0) {
-            fs.unlinkSync(tempFilePath);
-
+          if (!fileBuffer.length) {
             return reply.status(400).send({
-              message: "Arquivo salvo inválido ou vazio.",
+              message: "Arquivo inválido ou vazio.",
             });
           }
 
-          const resourceType = type === "pdf" ? "raw" : "image";
+          const file = bucket.file(objectPath);
 
-          const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-            resource_type: resourceType,
-            folder: `projetos-especiais/${folder}`,
-            use_filename: false,
-            unique_filename: true,
+          await file.save(fileBuffer, {
+            metadata: {
+              contentType: getMimeType(type, part.mimetype),
+            },
+            resumable: false,
           });
 
-          fs.unlinkSync(tempFilePath);
-
           responseData = {
-            url: uploadResult.secure_url,
+            url: `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${objectPath}`,
             fileName: part.filename,
             storedName: safeName,
             folder,
-            mimeType: part.mimetype,
-            publicId: uploadResult.public_id,
+            mimeType: part.mimetype || getMimeType(type),
           };
 
           break;
