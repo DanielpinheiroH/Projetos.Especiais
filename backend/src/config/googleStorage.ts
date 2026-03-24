@@ -1,26 +1,20 @@
 import { Storage } from "@google-cloud/storage";
 
-const requiredEnv = [
-  "GCS_PROJECT_ID",
-  "GCS_CLIENT_EMAIL",
-  "GCS_PRIVATE_KEY",
-  "GCS_BUCKET",
-] as const;
-
-for (const envName of requiredEnv) {
-  if (!process.env[envName]) {
-    throw new Error(`Variável obrigatória ausente: ${envName}`);
-  }
+if (!process.env.GCS_CREDENTIALS_JSON) {
+  throw new Error("Variável obrigatória ausente: GCS_CREDENTIALS_JSON");
 }
 
+if (!process.env.GCS_BUCKET) {
+  throw new Error("Variável obrigatória ausente: GCS_BUCKET");
+}
+
+const credentials = JSON.parse(process.env.GCS_CREDENTIALS_JSON);
+
 const storage = new Storage({
-  projectId: process.env.GCS_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GCS_CLIENT_EMAIL,
-    private_key: process.env.GCS_PRIVATE_KEY!.replace(/\\n/g, "\n"),
-  },
+  projectId: credentials.project_id,
+  credentials,
 });
 
-const bucket = storage.bucket(process.env.GCS_BUCKET!);
+const bucket = storage.bucket(process.env.GCS_BUCKET);
 
 export { storage, bucket };
