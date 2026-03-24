@@ -5,7 +5,6 @@ import { bucket } from "../config/googleStorage.js";
 
 function getMimeType(type: string, originalMimeType?: string) {
   if (originalMimeType) return originalMimeType;
-
   if (type === "pdf") return "application/pdf";
   return "application/octet-stream";
 }
@@ -71,8 +70,6 @@ export async function uploadRoutes(app: FastifyInstance) {
             folder,
             mimeType: part.mimetype || getMimeType(type),
           };
-
-          break;
         }
       }
 
