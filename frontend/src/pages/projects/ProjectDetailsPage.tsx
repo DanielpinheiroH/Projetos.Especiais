@@ -98,6 +98,7 @@ export function ProjectDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [deactivating, setDeactivating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   async function loadProject() {
     if (!id) return;
@@ -220,390 +221,425 @@ export function ProjectDetailsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="grid lg:grid-cols-[320px_1fr]">
-          <div className="border-b border-slate-100 bg-slate-50 lg:border-b-0 lg:border-r lg:border-slate-100">
-            <div className="flex h-full min-h-[320px] items-center justify-center p-8">
-              {project.cover_image_url ? (
-                <img
-                  src={project.cover_image_url}
-                  alt={project.name}
-                  className="h-[260px] w-[180px] rounded-[24px] object-cover shadow-xl ring-1 ring-slate-200"
-                />
-              ) : (
-                <div className="flex h-[260px] w-[180px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white text-center text-sm text-slate-400">
-                  Sem capa
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="p-7">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium uppercase tracking-[0.18em] text-red-400">
-                  Projeto
-                </p>
-
-                <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-                  {project.name}
-                </h2>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusBadge(
-                      project.status
-                    )}`}
-                  >
-                    {project.status}
-                  </span>
-
-                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
-                    {formatType(project.type)}
-                  </span>
-
-                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
-                    Validade: {formatDate(project.expires_at)}
-                  </span>
-                </div>
-
-                <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-600">
-                  {project.description || "Sem descrição cadastrada."}
-                </p>
+    <>
+      <div className="space-y-6">
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <div className="grid lg:grid-cols-[320px_1fr]">
+            <div className="border-b border-slate-100 bg-slate-50 lg:border-b-0 lg:border-r lg:border-slate-100">
+              <div className="flex h-full min-h-[320px] items-center justify-center p-8">
+                {project.cover_image_url ? (
+                  <img
+                    src={project.cover_image_url}
+                    alt={project.name}
+                    onClick={() => setIsImageModalOpen(true)}
+                    className="h-[260px] w-[180px] cursor-pointer rounded-[24px] object-cover shadow-xl ring-1 ring-slate-200 transition hover:opacity-95"
+                  />
+                ) : (
+                  <div className="flex h-[260px] w-[180px] items-center justify-center rounded-[24px] border border-dashed border-slate-300 bg-white text-center text-sm text-slate-400">
+                    Sem capa
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="w-full xl:w-[280px]">
-                <div className="rounded-3xl bg-slate-50 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    Visão geral
+            <div className="p-7">
+              <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-red-400">
+                    Projeto
                   </p>
 
-                  <div className="mt-4 space-y-3 text-sm">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="text-slate-500">Status</span>
-                      <strong className="text-slate-900">{project.status}</strong>
-                    </div>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                    {project.name}
+                  </h2>
 
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="text-slate-500">Tipo</span>
-                      <strong className="text-right text-slate-900">
-                        {formatType(project.type)}
-                      </strong>
-                    </div>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusBadge(
+                        project.status
+                      )}`}
+                    >
+                      {project.status}
+                    </span>
 
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="text-slate-500">Validade</span>
-                      <strong className="text-right text-slate-900">
-                        {formatDate(project.expires_at)}
-                      </strong>
-                    </div>
+                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                      {formatType(project.type)}
+                    </span>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Criado em</span>
-                      <strong className="text-slate-900">
-                        {formatDate(project.created_at)}
-                      </strong>
+                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                      Validade: {formatDate(project.expires_at)}
+                    </span>
+                  </div>
+
+                  <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-600">
+                    {project.description || "Sem descrição cadastrada."}
+                  </p>
+                </div>
+
+                <div className="w-full xl:w-[280px]">
+                  <div className="rounded-3xl bg-slate-50 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      Visão geral
+                    </p>
+
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Status</span>
+                        <strong className="text-slate-900">
+                          {project.status}
+                        </strong>
+                      </div>
+
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Tipo</span>
+                        <strong className="text-right text-slate-900">
+                          {formatType(project.type)}
+                        </strong>
+                      </div>
+
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Validade</span>
+                        <strong className="text-right text-slate-900">
+                          {formatDate(project.expires_at)}
+                        </strong>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Criado em</span>
+                        <strong className="text-slate-900">
+                          {formatDate(project.created_at)}
+                        </strong>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
-              <button className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                Editar
-              </button>
+              <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
+                <button className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                  Editar
+                </button>
 
-              <button
-                onClick={handleDeactivate}
-                disabled={deactivating || project.status === "INATIVO"}
-                className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
-              >
-                {deactivating ? "Desativando..." : "Desativar projeto"}
-              </button>
+                <button
+                  onClick={handleDeactivate}
+                  disabled={deactivating || project.status === "INATIVO"}
+                  className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                >
+                  {deactivating ? "Desativando..." : "Desativar projeto"}
+                </button>
 
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="rounded-2xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
-              >
-                {deleting ? "Excluindo..." : "Excluir projeto"}
-              </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="rounded-2xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                >
+                  {deleting ? "Excluindo..." : "Excluir projeto"}
+                </button>
 
-              <button
-                onClick={handleExportSales}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
-              >
-                Exportar vendas
-              </button>
+                <button
+                  onClick={handleExportSales}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+                >
+                  Exportar vendas
+                </button>
 
-              <button
-                onClick={handleRegisterSale}
-                className="rounded-2xl bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
-              >
-                Registrar venda
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Status</p>
-          <strong className="mt-2 block text-xl text-slate-900">
-            {project.status}
-          </strong>
-        </div>
-
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Tipo</p>
-          <strong className="mt-2 block text-xl text-slate-900">
-            {formatType(project.type)}
-          </strong>
-        </div>
-
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Validade</p>
-          <strong className="mt-2 block text-xl text-slate-900">
-            {formatDate(project.expires_at)}
-          </strong>
-        </div>
-
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Sem validade</p>
-          <strong className="mt-2 block text-xl text-slate-900">
-            {project.has_no_expiration ? "Sim" : "Não"}
-          </strong>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Informações adicionais
-          </h3>
-
-          <div className="mt-4 space-y-3 text-sm text-slate-600">
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-              <span>Data de criação</span>
-              <strong className="text-slate-900">
-                {formatDate(project.created_at)}
-              </strong>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-              <span>Última atualização</span>
-              <strong className="text-slate-900">
-                {formatDate(project.updated_at)}
-              </strong>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-              <span>Total de cotas</span>
-              <strong className="text-slate-900">{project.quotas.length}</strong>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-              <span>Total de vendas</span>
-              <strong className="text-slate-900">{project.sales.length}</strong>
+                <button
+                  onClick={handleRegisterSale}
+                  className="rounded-2xl bg-[var(--brand)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+                >
+                  Registrar venda
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Status</p>
+            <strong className="mt-2 block text-xl text-slate-900">
+              {project.status}
+            </strong>
+          </div>
+
+          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Tipo</p>
+            <strong className="mt-2 block text-xl text-slate-900">
+              {formatType(project.type)}
+            </strong>
+          </div>
+
+          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Validade</p>
+            <strong className="mt-2 block text-xl text-slate-900">
+              {formatDate(project.expires_at)}
+            </strong>
+          </div>
+
+          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Sem validade</p>
+            <strong className="mt-2 block text-xl text-slate-900">
+              {project.has_no_expiration ? "Sim" : "Não"}
+            </strong>
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">
-              PDF comercial
+              Informações adicionais
             </h3>
 
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                project.pdf_url
-                  ? "bg-red-100 text-red-700"
-                  : "bg-slate-200 text-slate-600"
-              }`}
-            >
-              {project.pdf_url ? "Disponível" : "Não anexado"}
-            </span>
+            <div className="mt-4 space-y-3 text-sm text-slate-600">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <span>Data de criação</span>
+                <strong className="text-slate-900">
+                  {formatDate(project.created_at)}
+                </strong>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <span>Última atualização</span>
+                <strong className="text-slate-900">
+                  {formatDate(project.updated_at)}
+                </strong>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <span>Total de cotas</span>
+                <strong className="text-slate-900">
+                  {project.quotas.length}
+                </strong>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <span>Total de vendas</span>
+                <strong className="text-slate-900">
+                  {project.sales.length}
+                </strong>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold text-slate-800">
-              {project.pdf_name || "Nenhum arquivo cadastrado"}
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Material comercial vinculado ao projeto.
-            </p>
-          </div>
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">
+                PDF comercial
+              </h3>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            {project.pdf_url ? (
-              <a
-                href={project.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  project.pdf_url
+                    ? "bg-red-100 text-red-700"
+                    : "bg-slate-200 text-slate-600"
+                }`}
               >
-                Baixar PDF
-              </a>
-            ) : (
-              <button
-                disabled
-                className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-400 opacity-70"
-              >
-                Sem PDF
+                {project.pdf_url ? "Disponível" : "Não anexado"}
+              </span>
+            </div>
+
+            <div className="mt-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-5">
+              <p className="text-sm font-semibold text-slate-800">
+                {project.pdf_name || "Nenhum arquivo cadastrado"}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Material comercial vinculado ao projeto.
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              {project.pdf_url ? (
+                <a
+                  href={project.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+                >
+                  Baixar PDF
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-400 opacity-70"
+                >
+                  Sem PDF
+                </button>
+              )}
+
+              <button className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                Substituir PDF
               </button>
-            )}
+            </div>
+          </div>
+        </section>
 
-            <button className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-              Substituir PDF
+        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Cotas do projeto
+            </h3>
+
+            <button className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-50">
+              Adicionar cota
             </button>
           </div>
-        </div>
-      </section>
 
-      <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Cotas do projeto
-          </h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 text-left">Cota</th>
+                  <th className="px-4 py-3 text-left">Descrição</th>
+                  <th className="px-4 py-3 text-left">Tipo</th>
+                  <th className="px-4 py-3 text-left">Valor</th>
+                  <th className="px-4 py-3 text-left">Total</th>
+                  <th className="px-4 py-3 text-left">Vendidas</th>
+                  <th className="px-4 py-3 text-left">Disponíveis</th>
+                </tr>
+              </thead>
 
-          <button className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-slate-50">
-            Adicionar cota
-          </button>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-slate-200">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-3 text-left">Cota</th>
-                <th className="px-4 py-3 text-left">Descrição</th>
-                <th className="px-4 py-3 text-left">Tipo</th>
-                <th className="px-4 py-3 text-left">Valor</th>
-                <th className="px-4 py-3 text-left">Total</th>
-                <th className="px-4 py-3 text-left">Vendidas</th>
-                <th className="px-4 py-3 text-left">Disponíveis</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {project.quotas.length > 0 ? (
-                project.quotas.map((quota) => (
-                  <tr
-                    key={quota.id}
-                    className="border-t border-slate-100 transition hover:bg-red-50/30"
-                  >
-                    <td className="px-4 py-3 font-medium text-slate-800">
-                      {quota.name}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {quota.description || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {quota.quota_type}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {formatMoney(quota.unit_price)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {quota.quantity_total}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {quota.quantity_sold}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      {quota.quantity_available}
+              <tbody>
+                {project.quotas.length > 0 ? (
+                  project.quotas.map((quota) => (
+                    <tr
+                      key={quota.id}
+                      className="border-t border-slate-100 transition hover:bg-red-50/30"
+                    >
+                      <td className="px-4 py-3 font-medium text-slate-800">
+                        {quota.name}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {quota.description || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {quota.quota_type}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {formatMoney(quota.unit_price)}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {quota.quantity_total}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {quota.quantity_sold}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {quota.quantity_available}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-4 py-6 text-center text-slate-500"
+                    >
+                      Nenhuma cota cadastrada para este projeto.
                     </td>
                   </tr>
-                ))
-              ) : (
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Histórico de vendas
+            </h3>
+
+            <button
+              onClick={handleExportSales}
+              className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+            >
+              Exportar vendas do projeto
+            </button>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500">
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-6 text-center text-slate-500"
-                  >
-                    Nenhuma cota cadastrada para este projeto.
-                  </td>
+                  <th className="px-4 py-3 text-left">Data</th>
+                  <th className="px-4 py-3 text-left">Anunciante</th>
+                  <th className="px-4 py-3 text-left">Executivo</th>
+                  <th className="px-4 py-3 text-left">Cota</th>
+                  <th className="px-4 py-3 text-left">Quantidade</th>
+                  <th className="px-4 py-3 text-left">Valor original</th>
+                  <th className="px-4 py-3 text-left">Desconto</th>
+                  <th className="px-4 py-3 text-left">Valor final</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
 
-      <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Histórico de vendas
-          </h3>
+              <tbody>
+                {project.sales.length > 0 ? (
+                  project.sales.map((sale, index) => (
+                    <tr
+                      key={`${sale.id}-${index}`}
+                      className="border-t border-slate-100 transition hover:bg-red-50/30"
+                    >
+                      <td className="px-4 py-3">{formatDate(sale.sale_date)}</td>
+                      <td className="px-4 py-3">
+                        {sale.advertiser_name || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {sale.executive_name || "-"}
+                      </td>
+                      <td className="px-4 py-3">{sale.quota_name || "-"}</td>
+                      <td className="px-4 py-3">{sale.quantity || 0}</td>
+                      <td className="px-4 py-3">
+                        {formatMoney(sale.original_unit_price)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {sale.discount_percentage || 0}%
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">
+                        {formatMoney(sale.final_total_price)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-slate-500"
+                    >
+                      Nenhuma venda registrada para este projeto.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
-          <button
-            onClick={handleExportSales}
-            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium transition hover:bg-[var(--brand-soft)] hover:text-[var(--brand-dark)]"
+      {isImageModalOpen && project.cover_image_url && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
           >
-            Exportar vendas do projeto
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute -right-3 -top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-slate-800 shadow-lg"
+            >
+              ×
+            </button>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-3 text-left">Data</th>
-                <th className="px-4 py-3 text-left">Anunciante</th>
-                <th className="px-4 py-3 text-left">Executivo</th>
-                <th className="px-4 py-3 text-left">Cota</th>
-                <th className="px-4 py-3 text-left">Quantidade</th>
-                <th className="px-4 py-3 text-left">Valor original</th>
-                <th className="px-4 py-3 text-left">Desconto</th>
-                <th className="px-4 py-3 text-left">Valor final</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {project.sales.length > 0 ? (
-                project.sales.map((sale, index) => (
-                  <tr
-                    key={`${sale.id}-${index}`}
-                    className="border-t border-slate-100 transition hover:bg-red-50/30"
-                  >
-                    <td className="px-4 py-3">{formatDate(sale.sale_date)}</td>
-                    <td className="px-4 py-3">
-                      {sale.advertiser_name || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {sale.executive_name || "-"}
-                    </td>
-                    <td className="px-4 py-3">{sale.quota_name || "-"}</td>
-                    <td className="px-4 py-3">{sale.quantity || 0}</td>
-                    <td className="px-4 py-3">
-                      {formatMoney(sale.original_unit_price)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {sale.discount_percentage || 0}%
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-slate-900">
-                      {formatMoney(sale.final_total_price)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="px-4 py-6 text-center text-slate-500"
-                  >
-                    Nenhuma venda registrada para este projeto.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            <img
+              src={project.cover_image_url}
+              alt={project.name}
+              className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+            />
+          </div>
         </div>
-      </section>
-    </div>
+      )}
+    </>
   );
 }
