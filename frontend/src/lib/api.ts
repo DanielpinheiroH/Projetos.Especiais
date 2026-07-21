@@ -1,8 +1,17 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim();
 
-if (!API_URL) {
+if (!rawApiUrl) {
   throw new Error("VITE_API_URL não definida");
 }
+
+const apiUrlWithProtocol = /^https?:\/\//i.test(rawApiUrl)
+  ? rawApiUrl
+  : `https://${rawApiUrl}`;
+
+const apiUrlWithoutTrailingSlash = apiUrlWithProtocol.replace(/\/+$/, "");
+const API_URL = /\/api$/i.test(apiUrlWithoutTrailingSlash)
+  ? apiUrlWithoutTrailingSlash
+  : `${apiUrlWithoutTrailingSlash}/api`;
 
 export type ProjectQuotaInput = {
   name: string;

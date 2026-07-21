@@ -102,6 +102,9 @@ VITE_API_URL=https://projetos-especiais.duckdns.org/api
 Depois faça um novo deploy do frontend. `CORS_ORIGIN`, no `.env.vps`, deve ser
 `https://projetosespeciais.vercel.app`, sem barra no final.
 
+Não configure `VITE_API_URL` somente com o hostname: a URL de produção completa
+inclui obrigatoriamente `https://` e o prefixo `/api`.
+
 ## Logs e diagnóstico
 
 ```bash
