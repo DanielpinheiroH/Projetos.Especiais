@@ -1,25 +1,26 @@
 import { Storage } from "@google-cloud/storage";
 
-if (!process.env.GCS_CREDENTIALS_JSON) {
-  throw new Error("Variável obrigatória ausente: GCS_CREDENTIALS_JSON");
-}
-
 if (!process.env.GCS_BUCKET) {
   throw new Error("Variável obrigatória ausente: GCS_BUCKET");
 }
 
-const raw = process.env.GCS_CREDENTIALS_JSON!;
+const rawCredentials = process.env.GCS_CREDENTIALS_JSON;
+const credentials = rawCredentials
+  ? JSON.parse(rawCredentials.replace(/\r?\n/g, "\n").trim())
+  : null;
 
-const credentials = JSON.parse(
-  raw
-    .replace(/\r?\n/g, "\n")
-    .trim()
-);
+if (!credentials && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  throw new Error(
+    "Defina GCS_CREDENTIALS_JSON ou GOOGLE_APPLICATION_CREDENTIALS"
+  );
+}
 
-const storage = new Storage({
-  projectId: credentials.project_id,
-  credentials,
-});
+const storage = credentials
+  ? new Storage({
+      projectId: credentials.project_id,
+      credentials,
+    })
+  : new Storage();
 
 const bucket = storage.bucket(process.env.GCS_BUCKET);
 

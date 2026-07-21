@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { buildApp } from "./app.js";
-import { testDbConnection } from "./db/db.js";
+import { db, testDbConnection } from "./db/db.js";
 import { initializeDatabase } from "./db/schema.js";
 
 async function start() {
@@ -17,6 +17,20 @@ async function start() {
       port,
       host: "0.0.0.0",
     });
+
+    let shuttingDown = false;
+    const shutdown = async (signal: string) => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+
+      app.log.info({ signal }, "Encerrando servidor");
+      await app.close();
+      await db.end();
+      process.exit(0);
+    };
+
+    process.once("SIGTERM", () => void shutdown("SIGTERM"));
+    process.once("SIGINT", () => void shutdown("SIGINT"));
 
     console.log(`Servidor rodando em http://localhost:${port}`);
   } catch (error) {

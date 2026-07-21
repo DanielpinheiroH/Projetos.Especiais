@@ -1,0 +1,7 @@
+.env.vps
+.env.vps.*
+!.env.vps.example
+.VSCodeCounter/
+backups/
+.deploy-access/
+*.dump
