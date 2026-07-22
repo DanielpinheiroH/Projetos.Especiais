@@ -15,6 +15,14 @@ A credencial do Google Cloud deve ficar em
 monta no container como arquivo somente leitura, seguindo o mesmo padrão do
 `sistema-veiculacoes`.
 
+Como a imagem executa o backend com o usuário `node` (UID/GID 1000), ajuste a
+propriedade da credencial antes de subir o container:
+
+```bash
+sudo chown 1000:1000 backend/secrets/gcs-service-account.json
+sudo chmod 600 backend/secrets/gcs-service-account.json
+```
+
 ## Primeira publicação
 
 ```bash
